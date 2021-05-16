@@ -5,6 +5,7 @@ import haxe.io.Eof;
 import haxe.io.Error;
 import haxe.io.Input;
 import haxe.io.Output;
+import SysTools.*;
 
 /**
  * ...
@@ -47,6 +48,7 @@ class BytesTools {
 	public static function writeBytesNonBlockingAsBlocking(output:Output, bytes:Bytes, pos:Int, len:Int) {
 		var till = pos + len;
 		var data = bytes.getData();
+		var blocked = false;
 		while (pos < till) {
 			try {
 				while (pos < till) {
@@ -60,9 +62,14 @@ class BytesTools {
 			} catch (x:Error) {
 				switch (x) {
 					case Blocked: // sync wait
+						if (!blocked) {
+							blocked = true;
+							println("[writeBytes] blocked");
+						}
 					default: throw x;
 				}
 			}
 		}
+		if (blocked) println("[writeBytes] done");
 	}
 }

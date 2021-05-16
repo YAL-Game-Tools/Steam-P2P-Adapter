@@ -30,7 +30,9 @@ class SteamTools {
 	public static function sendSimple(remote:SteamID, pkt:Packet, type:EP2PSend = EP2PSend.RELIABLE) {
 		var b = Bytes.alloc(1);
 		b.set(0, pkt);
-		Steam.networking.sendPacket(remote, b, 1, type);
+		if (!Steam.networking.sendPacket(remote, b, 1, type)) {
+			Sys.println('Failed to send a simple packet ($pkt)');
+		}
 	}
 	
 	static var keepAlive_time:Float = 0;

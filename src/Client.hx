@@ -46,14 +46,15 @@ class Client {
 		println("Joined a lobby!");
 		
 		var remote = mtmk.getLobbyOwner();
-		println('Waiting for P2P connection from $remote...');
+		println('Establishing P2P connection with $remote...');
 		SteamTools.discardPackets();
 		SteamTools.sendSimple(remote, Packet.Hello);
 		var gotGreet = false;
+		var nextSend = Sys.time() + 5;
 		while (mtmk.getLobbyMembers() >= 2 && !gotGreet) {
 			while (net.receivePacket()) {
 				var pktRemote = net.getPacketSender();
-				//trace('Packet from $pktRemote');
+				println('Got a ' + net.getPacketSize() + 'B packet from $pktRemote');
 				if (pktRemote != remote) continue;
 				var bytes = net.getPacketData();
 				if (bytes.get(0) == Packet.HelloYes) {
@@ -64,8 +65,17 @@ class Client {
 			if (gotGreet) break;
 			Steam.onEnterFrame();
 			Sys.sleep(0.01);
+			
+			var now = Sys.time();
+			if (Sys.time() > nextSend) {
+				println("Sending another packet because connection is taking a while...");
+				println("State: " + net.getP2PSessionState(remote));
+				SteamTools.sendSimple(remote, Packet.Hello);
+				nextSend = now + 5;
+			}
 		}
 		if (!gotGreet) exit("Player left without a greet");
+		println("State: " + net.getP2PSessionState(remote));
 		
 		var server = new Socket();
 		println("Creating a server...");
