@@ -9,6 +9,11 @@ class Params {
 	public static var mode:Int = -1;
 	public static var host:String = null;
 	public static var port:Int = -1;
+	
+	public static var logPackets:Bool = false;
+	public static var logBytes:Bool = false;
+	public static var maxLogBytes = 16;
+	
 	public static function init() {
 		var i = 0;
 		var args = Sys.args();
@@ -21,8 +26,8 @@ class Params {
 				case "--client": mode = 1; 1;
 				case "--host": host = arg(1); 2;
 				case "--port": port = Std.parseInt(arg(1)); 2;
-				case "--log-packets": Adapter.logPackets = true; 1;
-				case "--log-data": Adapter.logData = true; 1;
+				case "--log-packets": logPackets = true; 1;
+				case "--log-data": logBytes = true; 1;
 				default: 0;
 			}
 			if (del > 0) {

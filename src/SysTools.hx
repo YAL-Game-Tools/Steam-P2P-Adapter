@@ -1,4 +1,5 @@
 package ;
+import haxe.CallStack;
 import haxe.Rest;
 
 /**
@@ -14,6 +15,11 @@ class SysTools {
 	}
 	public static function printlns(lines:Rest<String>) {
 		for (line in lines) Sys.println(line);
+	}
+	public static inline function printError(label:String, e:Dynamic) {
+		println(label + ": " + e
+			+ "\n" + CallStack.toString(CallStack.exceptionStack(true))
+		);
 	}
 	public static function exit(?error:String):Any {
 		if (error != null) Sys.println(error);
@@ -34,7 +40,7 @@ class SysTools {
 	}
 	public static function geti(prompt:String, def:Int = -1):Int {
 		print(prompt);
-		print('(default: `$def`)');
+		print(' (default: `$def`)');
 		print('?: ');
 		var i = Std.parseInt(Sys.stdin().readLine());
 		if (i == null) i = def;

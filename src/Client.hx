@@ -10,6 +10,7 @@ import steamwrap.api.Steam;
 import sys.net.Host;
 import sys.net.Socket;
 import sys.thread.Thread;
+import adapter.*;
 
 /**
  * ...
@@ -91,7 +92,7 @@ class Client {
 			var skt = server.accept();
 			println("Socket connected!");
 			SteamTools.sendSimple(remote, Packet.Connect);
-			Adapter.proc(skt, remote);
+			(new TcpAdapter(skt, remote)).updateUntilError();
 			println("Socket disconnected!");
 			SteamTools.sendSimple(remote, Packet.Disconnect);
 		}

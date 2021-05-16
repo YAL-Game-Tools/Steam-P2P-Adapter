@@ -1,5 +1,6 @@
 package ;
 import SysTools.*;
+import adapter.*;
 import haxe.io.Bytes;
 import steamwrap.api.Matchmaking;
 import steamwrap.api.Matchmaking.LobbyType;
@@ -89,7 +90,7 @@ class Server {
 					println("Failed to connect!");
 					continue;
 				}
-				Adapter.proc(skt, remote);
+				(new TcpAdapter(skt, remote)).updateUntilError();
 				println("Socket disconnected!");
 				println("Waiting for player to [re-]connect to their relay...");
 			}
