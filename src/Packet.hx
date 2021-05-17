@@ -17,4 +17,5 @@ enum abstract Packet(Int) from Int to Int {
 	var ChunkStart = 121;
 	var ChunkPart = 122;
 	var ChunkEnd = 123;
+	var UdpData = 124;
 }

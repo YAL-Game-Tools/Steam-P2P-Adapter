@@ -16,33 +16,49 @@ class Adapter {
 	public function new(remote:SteamID) {
 		this.remote = remote;
 	}
+	public function closeSocket():Void {
+		
+	}
 	
-	public function readFromSocket(fn:Bytes->Void):Void {
+	// client mode:
+	public function bindServer(url:String, port:Int):Bool {
+		return true;
+	}
+	public function awaitClientConnection():Bool {
+		return false;
+	}
+	// server mode:
+	public function connectToServer(url:String, port:Int):Bool {
+		return false;
+	}
+	
+	public function readFromSocket(fn:Bytes->Int->Int->Void):Void {
 		throw "todo";
 	}
 	public function writeToSocket(bytes:Bytes, pos:Int, len:Int):Bool {
 		throw "todo";
 	}
-	public function closeSocket():Void {
-		
-	}
 	
-	public function writeToSteam(bytes:Bytes):Void {
+	public function writeToSteam(bytes:Bytes, pos:Int, len:Int):Void {
 		throw "todo";
 	}
 	
-	function handleSteamPacketData(bytes:Bytes, pos:Int, len:Int, ?chunked:Bool):Bool {
-		if (Params.logBytes) {
-			print("steam -> " + len + "B -> socket");
-			if (chunked) print(" [chunked]");
-			var maxLogBytes = Params.maxLogBytes;
-			var n = len > maxLogBytes ? maxLogBytes : len;
-			for (i in 0 ... n) {
-				print(" " + StringTools.hex(bytes.get(pos + i), 2));
-			}
-			println("");
+	function handleSteamPacketData_log(bytes:Bytes, pos:Int, len:Int, kind:SteamPacketKind):Void {
+		print("steam -> " + len + "B -> socket");
+		switch (kind) {
+			case Reliable: print(" [tcp]");
+			case Chunked: print(" [chunked]");
+			case Unreliable: print(" [udp]");
 		}
-		
+		var maxLogBytes = Params.maxLogBytes;
+		var n = len > maxLogBytes ? maxLogBytes : len;
+		for (i in 0 ... n) {
+			print(" " + StringTools.hex(bytes.get(pos + i), 2));
+		}
+		println("");
+	}
+	function handleSteamPacketData(bytes:Bytes, pos:Int, len:Int, kind:SteamPacketKind):Bool {
+		if (Params.logBytes) handleSteamPacketData_log(bytes, pos, len, kind);
 		return writeToSocket(bytes, pos, len);
 	}
 	
@@ -57,7 +73,10 @@ class Adapter {
 		switch (kind) {
 			case Packet.Data:
 				if (Params.logPackets) println("socket");
-				if (!handleSteamPacketData(bytes, 5, len - 5)) return false;
+				if (!handleSteamPacketData(bytes, 5, len - 5, Reliable)) return false;
+			case Packet.UdpData:
+				if (Params.logPackets) println("socket");
+				if (!handleSteamPacketData(bytes, 5, len - 5, Unreliable)) return false;
 			case Packet.ChunkStart:
 				if (Params.logPackets) println("chunkStart");
 				chunkBuilder = new BytesBuffer();
@@ -73,7 +92,7 @@ class Adapter {
 				var cl = chunkBuilder.length;
 				var cb = chunkBuilder.getBytes();
 				//println("chunk end: " + (len - 1) + ', $cl total');
-				if (!handleSteamPacketData(cb, 0, cl, true)) return false;
+				if (!handleSteamPacketData(cb, 0, cl, Chunked)) return false;
 				chunkBuilder = null;
 			case Packet.Disconnect:
 				if (Params.logPackets) println("bye!");
@@ -92,8 +111,8 @@ class Adapter {
 		//Steam.onEnterFrame(); // not necessary - no events at this point
 		SteamTools.keepAlive(remote);
 		
-		readFromSocket(function(bytes:Bytes) {
-			writeToSteam(bytes);
+		readFromSocket(function(bytes, pos, len) {
+			writeToSteam(bytes, pos, len);
 		});
 		if (hasError) return;
 		
@@ -103,11 +122,18 @@ class Adapter {
 			if (!handleSteamPacket()) break;
 		}
 	}
+	public function canUpdate() {
+		return Steam.matchmaking.getLobbyID() != SteamID.defValue && !hasError;
+	}
 	public function updateUntilError():Void {
-		while (Steam.matchmaking.getLobbyID() != SteamID.defValue) {
-			Sys.sleep(0.01);
+		while (canUpdate()) {
+			//Sys.sleep(0.001);
 			update();
-			if (hasError) break;
 		}
 	}
+}
+enum abstract SteamPacketKind(Int) {
+	var Reliable;
+	var Chunked;
+	var Unreliable;
 }

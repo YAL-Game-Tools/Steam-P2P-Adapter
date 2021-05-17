@@ -49,8 +49,6 @@ This way, you can avoid port forwarding so long as Steam can establish a P2P con
 
 ## Limitations and caveats
 
-- TCP-only for now  
-	(aside: most UDP-based games with ad-hoc networking that I've seen are written by _me_)
 - Only supports two players per session   
 	(though you can technically run multiple copies of the tool on host's end)
 - Does not support forwarding socket errors - if something goes wrong, you'll get either a generic "connection closed" or a "connection timeout". Inspecting the tool's output may reveal the actual problem.

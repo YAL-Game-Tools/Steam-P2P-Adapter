@@ -78,21 +78,18 @@ class Client {
 		if (!gotGreet) exit("Player left without a greet");
 		println("State: " + net.getP2PSessionState(remote));
 		
-		var server = new Socket();
+		var adapter:Adapter = AdapterTools.create(remote, Params.protocolFlags);
 		println("Creating a server...");
-		try {
-			server.bind(new Host(url), port);
-			server.listen(1);
-		} catch (x:Dynamic) {
-			exit("Failed to host a server: " + x);
-		}
+		if (!adapter.bindServer(url, port)) return;
 		
 		while (mtmk.getLobbyMembers() >= 2) {
 			println('You can now connect to $url:$port...');
-			var skt = server.accept();
+			if (!adapter.awaitClientConnection()) return;
+			
 			println("Socket connected!");
 			SteamTools.sendSimple(remote, Packet.Connect);
-			(new TcpAdapter(skt, remote)).updateUntilError();
+			adapter.updateUntilError();
+			
 			println("Socket disconnected!");
 			SteamTools.sendSimple(remote, Packet.Disconnect);
 		}

@@ -83,14 +83,11 @@ class Server {
 			}
 			if (gotConnect) {
 				println("Socket connected!");
-				var skt = new Socket();
-				try {
-					skt.connect(new Host(url), port);
-				} catch (x:Dynamic) {
-					println("Failed to connect!");
+				var adapter:Adapter = AdapterTools.create(remote, Params.protocolFlags);
+				if (!adapter.connectToServer(url, port)) {
 					continue;
 				}
-				(new TcpAdapter(skt, remote)).updateUntilError();
+				adapter.updateUntilError();
 				println("Socket disconnected!");
 				println("Waiting for player to [re-]connect to their relay...");
 			}

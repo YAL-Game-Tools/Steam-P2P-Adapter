@@ -30,11 +30,24 @@ class Main {
 			Sys.sleep(0.1);
 		}
 		//
+		if (Params.protocolFlags == 0) {
+			var f = getm("What protocol does the game use?", [
+				"TCP",
+				"UDP",
+			]);
+			switch (f) {
+				case 0: Params.protocolFlags = 1;
+				case 1: Params.protocolFlags = 2;
+				default: exit("See you later then");
+			}
+		}
+		//
 		var m = Params.mode;
-		if (m < 0) m = getm("What would you like to do?", [
-			"Server",
-			"Client",
+		if (m < 0) m = getm("What will you be doing?", [
+			"Hosting a server",
+			"Joining a server",
 		]);
+		//
 		switch (m) {
 			case 0: Server.main();
 			case 1: Client.main();
