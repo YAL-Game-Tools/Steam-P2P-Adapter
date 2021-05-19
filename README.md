@@ -35,6 +35,8 @@ This way, you can avoid port forwarding so long as Steam can establish a P2P con
 	(e.g. `480` for SDK demo app)
 	since free apps do not have the matchmaking API enabled by default.  
 	Make sure that Steam client is running!
+- Select the protocol (TCP or UDP) that the game uses.  
+	Most games mention this in documentation; if they don't, they likely use TCP.
 - The person hosting a server (host) picks Server.  
 	Enter the IP to connect to (`127.0.0.1` if hosted on the same machine)
 	and port (determined by the game).
@@ -49,12 +51,24 @@ This way, you can avoid port forwarding so long as Steam can establish a P2P con
 
 ## Limitations and caveats
 
+- Routing packets through an extra pair of applications may slightly increase latency compared to direct connections. In my tests, added latency appeared to be 10..20ms, depending on the game.
 - Only supports two players per session   
 	(though you can technically run multiple copies of the tool on host's end)
 - Does not support forwarding socket errors - if something goes wrong, you'll get either a generic "connection closed" or a "connection timeout". Inspecting the tool's output may reveal the actual problem.
 - No Mac/Linux builds unless you compile them yourself (see below)
 - The tool has no knowledge of what application it's communicating with,
 	so it's on you not to do anything stupid/insecure.
+
+## Command-line arguments
+
+You may run the tool from CLI (Command Prompt or PowerShell on Windows, Terminal on Mac/Linux, etc.) to avoid having to re-enter details every time you run the tool. Supported arguments are as following:
+
+- `--server`: Automatically enters server mode
+- `--client`: Automatically enters client mode
+- `--tcp`: Automatically uses TCP protocol
+- `--udp`: Automatically uses UDP protocol
+- `--host <ip>`: Uses the specified IP address to host on/connect to (e.g. `--host 127.0.0.1`)
+- `--port <number>`: Uses the specified IP address to host on/connect to (e.g. `--port 5394`)
 
 ## Compiling
 

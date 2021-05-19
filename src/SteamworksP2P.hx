@@ -10,7 +10,7 @@ import SysTools.*;
  * ...
  * @author YellowAfterlife
  */
-class Main {
+class SteamworksP2P {
 	static function main() {
 		println("hello!");
 		Params.init();
